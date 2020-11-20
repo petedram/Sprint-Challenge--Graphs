@@ -37,13 +37,28 @@ class Graph:
         Get all neighbors (edges) of a vertex.
         """
         return self.vertices[vertex_id]
+    
+
+def get_backtrack(direction_last_travelled):
+    if direction_last_travelled == 'n':
+        return 's'
+    elif direction_last_travelled == 's':
+        return 'n'
+    elif direction_last_travelled == 'e':
+        return 'w'
+    elif direction_last_travelled == 'w':
+        return 'e'
+
+    
+
+
 
 # You may uncomment the smaller graphs for development and testing purposes.
 # map_file = "maps/test_line.txt"
-# map_file = "maps/test_cross.txt"
+map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
 # map_file = "maps/test_loop_fork.txt"
-map_file = "maps/main_maze.txt"
+# map_file = "maps/main_maze.txt"
 
 # Loads the map into a dictionary
 room_graph=literal_eval(open(map_file, "r").read())
@@ -56,23 +71,94 @@ player = Player(world.starting_room)
 
 # Fill this out with directions to walk
 # traversal_path = ['n', 'n']
+
+##
+##Find a way to add the best path so far to make it more efficient??
+
+
+def DFT_visit(v):
+    last_room = player.current_room.id
+    direction_last_travelled = v
+
+    #Let's go!
+    print('travelling: ', v)
+    player.travel(v)
+
+    print(f'Just arrived in room {player.current_room.id}, where the available exits are {player.current_room.get_exits()}')
+    print(f'Before arriving in this room, travelled from {last_room}')
+
+    #go back and fill in the current room number, now that we know that   
+    print(f'last room {last_room} and direction {direction_last_travelled} and current room {player.current_room.id}')
+    # my_graph.vertices[last_room][direction_last_travelled] == player.current_room.id
+    my_graph.add_edge(last_room, direction_last_travelled,player.current_room.id )
+
+    #build node + edges the first time we visit room
+    if player.current_room.id not in my_graph.vertices:
+        my_graph.add_vertex(player.current_room.id) #node
+        for edge in player.current_room.get_exits(): #edges
+            print('adding edge', edge)
+            my_graph.add_edge(player.current_room.id, edge, '?')
+
+    #latest status of graph
+    print('graph so far: ', my_graph.vertices)
+    
+    #ok where from here?
+    for where_next in my_graph.get_neighbors(player.current_room.id):
+        if my_graph.vertices[player.current_room.id][where_next] == '?':
+            DFT_visit(where_next)
+        else:
+            print('no more unexplored, recursing back')
+
+
 traversal_path = []
+move_history = []
 '''write code here'''
 
 my_graph = Graph()
 
-#build node + edges for the first room
+#First room
+#build node + edges
 my_graph.add_vertex(player.current_room.id) #node
-for edge in player.current_room.get_exits():
+for edge in player.current_room.get_exits(): #edges
     print('edge', edge)
     my_graph.add_edge(player.current_room.id, edge, '?')
 
-##Next Step: add key:value pairs in edge set i.e. 'n':'?'
+#DFT to complete the graph
+##check if unexplorered path from current room, if y, pick random and go there.
+###if no unexplored path from current room, go back to previous room ---> repeat this until back from where started.
+###need to keep track of previous rooms?
+####could have been to same room previous times... keep track of every step and backtrack in full?
+####room_history.append upon entry. Where no unexplored, start an unexplorered count containing index position and -= from there until find unexplorered. Keep adding even when backtracking?
+
+for move_option in my_graph.get_neighbors(player.current_room.id):
+    if my_graph.vertices[player.current_room.id][move_option] == '?':
+        DFT_visit(move_option)
+        # move_next.append(move_option)
+        # print('possible move: ', move_option)
+    else:
+        print('no more unexplored from parent')
+    
+    print('recursion complete')
+    print('final graph: ', my_graph.vertices)
 
 
-print('current room: ', player.current_room.id)
-print('exits: ', player.current_room.get_exits())
-print('graph so far: ', my_graph.vertices)
+
+# if move_option is None:
+#     print('no move options, back tracking')
+#     move_next = get_backtrack(direction_last_travelled)
+
+# move_next = random.choice(move_next)
+# print('next_move: ', move_next)
+
+#store room_id of where came from before travelling
+# last_room = player.current_room.id
+# #update the direction last travelled
+# direction_last_travelled = move_next
+# #travel!
+# player.travel(move_next)
+######################################################
+
+
 
 # player.travel(direction)
 
