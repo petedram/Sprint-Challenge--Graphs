@@ -98,16 +98,22 @@ def DFT_visit(v):
         for edge in player.current_room.get_exits(): #edges
             print('adding edge', edge)
             my_graph.add_edge(player.current_room.id, edge, '?')
+        # #add the edge from where we just came from
+        # if my_graph.vertices[player.current_room.id][get_backtrack(v)] == '?':
+        print(f'adding backtrack edge? {player.current_room.id}, {get_backtrack(v)}, {last_room}')
+        # my_graph.add_edge(player.current_room.id, get_backtrack(v), last_room)
 
     #latest status of graph
     print('graph so far: ', my_graph.vertices)
     
     #ok where from here?
-    for where_next in my_graph.get_neighbors(player.current_room.id):
+    print(f'--move options', player.current_room.get_exits())
+    for where_next in player.current_room.get_exits():
         if my_graph.vertices[player.current_room.id][where_next] == '?':
             DFT_visit(where_next)
         else:
             print('no more unexplored, recursing back')
+
 
 
 traversal_path = []
@@ -130,16 +136,15 @@ for edge in player.current_room.get_exits(): #edges
 ####could have been to same room previous times... keep track of every step and backtrack in full?
 ####room_history.append upon entry. Where no unexplored, start an unexplorered count containing index position and -= from there until find unexplorered. Keep adding even when backtracking?
 
-for move_option in my_graph.get_neighbors(player.current_room.id):
+print(f'--move options', player.current_room.get_exits())
+for move_option in player.current_room.get_exits(): #thinks w is move option from 2??
+    print(f'move option: {move_option} for room: {player.current_room.id}')
     if my_graph.vertices[player.current_room.id][move_option] == '?':
         DFT_visit(move_option)
-        # move_next.append(move_option)
-        # print('possible move: ', move_option)
-    else:
-        print('no more unexplored from parent')
-    
-    print('recursion complete')
-    print('final graph: ', my_graph.vertices)
+
+
+print('recursion complete')
+print('final graph: ', my_graph.vertices)
 
 
 
