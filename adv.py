@@ -76,7 +76,7 @@ player = Player(world.starting_room)
 ##Find a way to add the best path so far to make it more efficient??
 
 
-def DFT_visit(v):
+def DFT_visit(v, prev_dir):
     last_room = player.current_room.id
     direction_last_travelled = v
 
@@ -103,6 +103,11 @@ def DFT_visit(v):
         print(f'adding backtrack edge? {player.current_room.id}, {get_backtrack(v)}, {last_room}')
         # my_graph.add_edge(player.current_room.id, get_backtrack(v), last_room)
 
+        #start from here****************
+        #   adding backtrack edge causes unknown issue.
+        #   incomplete graph when not included...
+
+
     #latest status of graph
     print('graph so far: ', my_graph.vertices)
     
@@ -110,10 +115,10 @@ def DFT_visit(v):
     print(f'--move options', player.current_room.get_exits())
     for where_next in player.current_room.get_exits():
         if my_graph.vertices[player.current_room.id][where_next] == '?':
-            DFT_visit(where_next)
-        else:
-            print('no more unexplored, recursing back')
-
+            DFT_visit(where_next, where_next)
+        
+    print('no more unexplored, recursing back')
+    player.travel(get_backtrack(prev_dir))
 
 
 traversal_path = []
@@ -140,7 +145,7 @@ print(f'--move options', player.current_room.get_exits())
 for move_option in player.current_room.get_exits(): #thinks w is move option from 2??
     print(f'move option: {move_option} for room: {player.current_room.id}')
     if my_graph.vertices[player.current_room.id][move_option] == '?':
-        DFT_visit(move_option)
+        DFT_visit(move_option, move_option)
 
 
 print('recursion complete')
